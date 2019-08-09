@@ -124,3 +124,18 @@ from (
     ) p2
 where p1.movie_id=p2.movie_id) n
 order by diff asc;
+
+
+/**
+计算每部电影的总平均评分及评分总个数
+*/
+select movie_id, avg(rating), count(*)
+from rates
+group by movie_id;
+
+
+/**
+取到每部电影的每条评分
+*/
+select movie_id, rating 
+from rates;

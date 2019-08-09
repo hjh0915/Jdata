@@ -13,4 +13,9 @@ public class DataApplicationTests {
 	public void contextLoads() {
 	}
 
+	@Test
+	public void testMovieScore() {
+		
+	}
+
 }

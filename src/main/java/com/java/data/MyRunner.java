@@ -4,7 +4,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,16 +16,72 @@ import java.io.BufferedReader;
 import java.sql.*;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.java.data.entity.*;
+
+import java.util.stream.Collectors;
+
 @Component
 public class MyRunner implements CommandLineRunner {
 
+    private static final Logger log = LoggerFactory.getLogger(MyRunner.class);
+
     @Autowired
-    JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+	private ApplicationArguments nargs;
 
     public void run(String... args) throws Exception {
-        getUsers();
-        getMovies();
-        getRatings();
+        // getUsers();
+        // getMovies();
+        // getRatings();
+
+        if(nargs.containsOption("insert")) {
+            //Get argument values
+            List<String> values = nargs.getOptionValues("insert");
+             
+            log.info("insert :: " + values);
+            for (String x: values) {
+                log.info(x);
+                if (x.equals("users")) {
+                    getUsers();
+                } else if (x.equals("movies")) {
+                    getMovies();
+                } else if (x.equals("rates")) {
+                    getRatings();
+                } else {
+                    log.info("没有对应的表名");
+                }
+            }
+        }
+
+        // List<String> nonOptionArgs = nargs.getNonOptionArgs();
+         
+        // log.info("Non Option Args List ...");
+         
+        // if (!nonOptionArgs.isEmpty())
+        // {
+        //     nonOptionArgs.forEach(file -> log.info(file));
+        // }
+
+        if(nargs.containsOption("query")) {
+            List<String> values = nargs.getOptionValues("query");
+
+            log.info("query :: " + values);
+            for (String x: values) {
+                log.info(x);
+                if (x.equals("sex")) {
+                    getMoviesBySex();
+                }
+            }
+        }
+
+        if(nargs.containsOption("calc")) {
+            calcDeviation();
+        }
     }
 
     public void getUsers() throws IOException {
@@ -150,5 +208,103 @@ public class MyRunner implements CommandLineRunner {
                 ps.setString(4, words[3]);
             }
         }); 
+    }
+
+    public void getMoviesBySex() throws IOException {
+        String sql = "select t.movie_id, t.title, sum(t.female) as F, sum(t.male) as M " + 
+                    "from (select m.movie_id, m.title, " + 
+                    "avg(case when (u.gender = 'F') then  rating else 0 end) as female, " + 
+                    "avg(case when(u.gender = 'M') then rating else 0 end) as male " + 
+                    "from rates r, users u, movies m " +
+                    "where r.movie_id=m.movie_id and r.user_id=u.user_id " + 
+                    "group by m.movie_id, m.title, u.gender) t " + 
+                    "group by t.movie_id, t.title";
+
+        // List<Object> row = new ArrayList<>();
+        // List<List<object>> rows = new ArrayList<>();
+
+        jdbcTemplate.query(sql, result -> {
+            while (result.next()) {
+                System.out.print(String.format("%-60s", result.getString("title")));
+                System.out.print(String.format("%10.4f", result.getFloat("F")));
+                System.out.println(String.format("%10.4f", result.getFloat("M")));
+            }
+        });
+    }
+
+    public void calcDeviation() {
+        List<MovieScore> movieScores = getMovieScore();
+        // List<Rate> rates = getRates();
+
+        for (MovieScore movieScore : movieScores) {
+            int movieId = movieScore.getMovieId();
+            float avgScore = movieScore.getAvgScore();
+            int n = movieScore.getCnt();
+            List<Rate> rates = getRates();
+
+            List<Rate> movieRates = getMovieRates(rates, movieId);
+
+            float s = 0.0F;
+            for (Rate rate : movieRates) {
+                int rating = rate.getRating();
+                float x = ((float)rating - avgScore) ;
+                s = s + x*x;
+            }
+            float movieDeviation = s / n;
+
+            System.out.print(String.format("%-10d", movieId));
+            System.out.println(movieDeviation);
+        }
+    }
+
+    public List<MovieScore> getMovieScore() {
+        String sql = "select movie_id as movieId, avg(rating) as avgScore, count(*) as cnt from rates group by movie_id order by movie_id asc";
+
+        List<MovieScore> movieScores = new ArrayList<>();
+
+        jdbcTemplate.query(sql, result -> {
+            while (result.next()) {
+                MovieScore movieScore = new MovieScore();
+                movieScore.setMovieId(result.getInt("movieId"));
+                movieScore.setAvgScore(result.getFloat("avgScore"));
+                movieScore.setCnt(result.getInt("cnt"));
+
+                movieScores.add(movieScore);
+            }
+        });
+
+        return movieScores;
+    }
+    
+    public List<Rate> getRates() {
+
+        List<Rate> rates = new ArrayList<>();
+
+        jdbcTemplate.query("select movie_id as movieId, rating from rates order by movie_id asc",  
+            result -> {
+            while (result.next()) {
+                Rate rate = new Rate();
+                rate.setMovieId(result.getInt("movieId"));
+                rate.setRating(result.getInt("rating"));
+
+                rates.add(rate);
+            }
+        });
+
+        return rates;
+
+    }
+
+    public List<Rate> getMovieRates(List<Rate> rates, int movieId) {
+
+        // return rates.stream().filter(x -> (x.getMovieId() == movieId)).collect(Collectors.toList());
+        
+        List<Rate> movieRates = new ArrayList<>();
+        for (Rate x: rates) {
+            if (x.getMovieId() == movieId) {
+                movieRates.add(x);
+            }
+        }
+        return movieRates;
     }
 }
