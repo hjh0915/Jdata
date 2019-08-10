@@ -114,44 +114,8 @@ public class MovieServiceImpl implements MovieService {
         Map<Integer, List<Rate>> rates = movieDao.getRates();
 
         for (MovieScore movieScore : movieScores) {
-            calcOneMovieDeviation(movieScore, rates);
+            movieScore.calcDeviation(rates);
         }
     }
-
-    @Override
-    public void calcOneMovieDeviation(MovieScore movieScore, Map<Integer, List<Rate>> rates) {
-        int movieId = movieScore.getMovieId();
-        Integer nid = new Integer(movieId);
-
-        float avgScore = movieScore.getAvgScore();
-        int n = movieScore.getCnt();
-        
-        List<Rate> movieRates = getMovieRates(rates, nid);
-
-        float s = 0.0F;
-        for (Rate rate : movieRates) {
-            int rating = rate.getRating();
-            float x = ((float)rating - avgScore) ;
-            s = s + x*x;
-        }
-        float movieDeviation = s / n;
-
-        System.out.print(String.format("%-10d", movieId));
-        System.out.println(movieDeviation);
-    }
-
-    private List<Rate> getMovieRates(Map<Integer, List<Rate>> rates, Integer movieId) {
-
-        //return rates.stream().filter(x -> (x.getMovieId() == movieId)).collect(Collectors.toList());
-        
-        // List<Rate> movieRates = new ArrayList<>();
-        // for (Rate x: rates) {
-        //     if (x.getMovieId() == movieId) {
-        //         movieRates.add(x);
-        //     }
-        // }
-        // return movieRates;
-
-        return rates.get(movieId);
-    }
+    
 }

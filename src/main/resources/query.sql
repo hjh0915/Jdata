@@ -133,9 +133,27 @@ select movie_id, avg(rating), count(*)
 from rates
 group by movie_id;
 
+/**
+有电影名称的平均分
+*/
+select m.movie_id, m.title, avg(rating), count(*) 
+from rates r, movies m 
+where r.movie_id=m.movie_id
+and m.title like '%Upon a %'  
+group by m.movie_id, m.title;
+
 
 /**
 取到每部电影的每条评分
 */
 select movie_id, rating 
 from rates;
+
+/**
+记录评分个数排序
+*/
+select m.movie_id, m.title, count(*) cnt 
+from rates r, movies m 
+where r.movie_id=m.movie_id 
+group by m.movie_id, m.title
+order by cnt asc;

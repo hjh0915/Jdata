@@ -30,4 +30,6 @@ dependencies {
 
 	compileOnly 'org.projectlombok:lombok:1.18.8'
 	annotationProcessor 'org.projectlombok:lombok:1.18.8'
+
+	testImplementation 'org.hamcrest:hamcrest-all:1.3'
 }
