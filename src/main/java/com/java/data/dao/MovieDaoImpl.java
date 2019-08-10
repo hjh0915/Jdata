@@ -96,7 +96,7 @@ public class MovieDaoImpl implements MovieDao {
 
     @Override
     public List<MovieScore> getMovieScore() {
-        String sql = "select movie_id as movieId, avg(rating) as avgScore, count(*) as cnt from rates group by movie_id order by movie_id asc";
+        String sql = "select r.movie_id as movieId, m.title, avg(r.rating) as avgScore, count(*) as cnt from rates r, movies m where r.movie_id=m.movie_id group by r.movie_id, m.title order by r.movie_id asc";
 
         List<MovieScore> movieScores = new ArrayList<>();
 
@@ -104,6 +104,7 @@ public class MovieDaoImpl implements MovieDao {
             while (result.next()) {
                 MovieScore movieScore = new MovieScore();
                 movieScore.setMovieId(result.getInt("movieId"));
+                movieScore.setTitle(result.getString("title"));
                 movieScore.setAvgScore(result.getFloat("avgScore"));
                 movieScore.setCnt(result.getInt("cnt"));
 

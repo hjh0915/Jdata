@@ -110,12 +110,27 @@ public class MovieServiceImpl implements MovieService {
 
     @Override
     public void calcDeviation() {
+        List<Object> oneMovie;
+        List<List<Object>> movies = new ArrayList<>();
+
         List<MovieScore> movieScores = movieDao.getMovieScore();
         Map<Integer, List<Rate>> rates = movieDao.getRates();
 
         for (MovieScore movieScore : movieScores) {
-            movieScore.calcDeviation(rates);
+            double x = movieScore.calcDeviation(rates);
+
+            // 输出到指定的List
+            oneMovie = new ArrayList<>();
+            oneMovie.add(movieScore.getTitle());
+            oneMovie.add(x);
+
+            movies.add(oneMovie);
         }
+
+        movies.forEach( x -> {
+            System.out.print(String.format("%-60s", x.get(0)));
+            System.out.println(String.format("%20.8f", x.get(1)));
+        });
     }
     
 }

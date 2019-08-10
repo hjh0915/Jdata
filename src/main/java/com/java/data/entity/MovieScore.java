@@ -15,7 +15,7 @@ public class MovieScore {
     public double calcDeviation(Map<Integer, List<Rate>> rates) {
         
         Integer nid = new Integer(movieId);
-        int n = cnt;
+        int n = cnt - 1 ;                  //方差和标准方差， 样本n 与 n-1 的差别是？
         
         List<Rate> movieRates = rates.get(movieId);
 
