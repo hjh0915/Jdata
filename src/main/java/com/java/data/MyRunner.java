@@ -234,15 +234,16 @@ public class MyRunner implements CommandLineRunner {
 
     public void calcDeviation() {
         List<MovieScore> movieScores = getMovieScore();
-        // List<Rate> rates = getRates();
+        Map<Integer, List<Rate>> rates = getRates();
 
         for (MovieScore movieScore : movieScores) {
             int movieId = movieScore.getMovieId();
+            Integer nid = new Integer(movieId);
+
             float avgScore = movieScore.getAvgScore();
             int n = movieScore.getCnt();
-            List<Rate> rates = getRates();
-
-            List<Rate> movieRates = getMovieRates(rates, movieId);
+            
+            List<Rate> movieRates = getMovieRates(rates, nid);
 
             float s = 0.0F;
             for (Rate rate : movieRates) {
@@ -276,18 +277,31 @@ public class MyRunner implements CommandLineRunner {
         return movieScores;
     }
     
-    public List<Rate> getRates() {
+    public Map<Integer, List<Rate>> getRates() {
 
-        List<Rate> rates = new ArrayList<>();
+        Map<Integer, List<Rate>> rates = new HashMap<>();
 
         jdbcTemplate.query("select movie_id as movieId, rating from rates order by movie_id asc",  
             result -> {
             while (result.next()) {
+                int id = result.getInt("movieId");
+                Integer nid = new Integer(id);
+
                 Rate rate = new Rate();
                 rate.setMovieId(result.getInt("movieId"));
                 rate.setRating(result.getInt("rating"));
 
-                rates.add(rate);
+                // 在rates这个map中去找这个id     
+                if (rates.containsKey(nid)) {
+                    // 如果找到了，就在moviedId中的value里新增
+                    List<Rate> x = rates.get(nid);
+                    x.add(rate);
+                } else {
+                    // 如果没找到，就新增查询结果放到这个rates里作为一个新元素
+                    List<Rate> v = new ArrayList<>();
+                    v.add(rate);
+                    rates.put(nid, v);
+                }
             }
         });
 
@@ -295,16 +309,18 @@ public class MyRunner implements CommandLineRunner {
 
     }
 
-    public List<Rate> getMovieRates(List<Rate> rates, int movieId) {
+    public List<Rate> getMovieRates(Map<Integer, List<Rate>> rates, Integer movieId) {
 
-        // return rates.stream().filter(x -> (x.getMovieId() == movieId)).collect(Collectors.toList());
+        //return rates.stream().filter(x -> (x.getMovieId() == movieId)).collect(Collectors.toList());
         
-        List<Rate> movieRates = new ArrayList<>();
-        for (Rate x: rates) {
-            if (x.getMovieId() == movieId) {
-                movieRates.add(x);
-            }
-        }
-        return movieRates;
+        // List<Rate> movieRates = new ArrayList<>();
+        // for (Rate x: rates) {
+        //     if (x.getMovieId() == movieId) {
+        //         movieRates.add(x);
+        //     }
+        // }
+        // return movieRates;
+
+        return rates.get(movieId);
     }
 }
