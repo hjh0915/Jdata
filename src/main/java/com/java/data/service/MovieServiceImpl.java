@@ -19,6 +19,8 @@ public class MovieServiceImpl implements MovieService {
     @Autowired
     private MovieDao movieDao;
 
+
+    //读到users.dat文件内的数据
     @Override
     public void getUsers() {
 
@@ -49,6 +51,8 @@ public class MovieServiceImpl implements MovieService {
 
     }
 
+
+    //读到movies.dat文件内的数据
     @Override
     public void getMovies() {
 
@@ -79,6 +83,8 @@ public class MovieServiceImpl implements MovieService {
 
     }
 
+
+    //读到ragings.dat文件内的数据
     @Override
     public void getRatings() {
 
@@ -108,6 +114,8 @@ public class MovieServiceImpl implements MovieService {
         }
     }
 
+
+    //计算一部电影的标准差
     @Override
     public void calcDeviation() {
         List<Object> oneMovie;

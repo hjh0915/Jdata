@@ -20,6 +20,8 @@ public class MovieDaoImpl implements MovieDao {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+
+    //写入数据库Users表中的数据，从文件中写入
     @Override
     public void writeUsers(List<String[]> rows) {
         String sql = "insert into users (user_id, gender, age, occupation, zip) values (?, ?, ?, ?, ?)";
@@ -38,6 +40,8 @@ public class MovieDaoImpl implements MovieDao {
         }); 
     }
 
+
+    //写入数据库Movies表中的数据，从文件中写入
     @Override
     public void writeMovies(List<String[]> rows) {
         String sql = "insert into movies (movie_id, title, genres) values (?, ?, ?)";
@@ -54,6 +58,8 @@ public class MovieDaoImpl implements MovieDao {
         }); 
     }
 
+
+    //写入数据库Ratings表中的数据，从文件中写入
     @Override
     public void writeRatings(List<String[]> rows) {
         String sql = "insert into rates (user_id, movie_id, rating, timestamp) values (?, ?, ?, ?)";
@@ -71,6 +77,8 @@ public class MovieDaoImpl implements MovieDao {
         }); 
     }
 
+
+    //三张表的关联后，从表中取出按照性别F, M的电影
     @Override
     public void getMoviesBySex() {
         String sql = "select t.movie_id, t.title, sum(t.female) as F, sum(t.male) as M " + 
@@ -94,6 +102,8 @@ public class MovieDaoImpl implements MovieDao {
         });
     }
 
+
+    //通过ratings表与movies表关联，取出并计算出每部电影的平均分，以及每部电影的评分数量
     @Override
     public List<MovieScore> getMovieScore() {
         String sql = "select r.movie_id as movieId, m.title, avg(r.rating) as avgScore, count(*) as cnt from rates r, movies m where r.movie_id=m.movie_id group by r.movie_id, m.title order by r.movie_id asc";
@@ -115,6 +125,8 @@ public class MovieDaoImpl implements MovieDao {
         return movieScores;
     }
 
+
+    //取到每部电影的每条评分
     @Override
     public Map<Integer, List<Rate>> getRates() {
 

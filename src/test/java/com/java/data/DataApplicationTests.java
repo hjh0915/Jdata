@@ -44,7 +44,7 @@ public class DataApplicationTests {
 
 		double x = m.calcDeviation(rates);
 
-		assertThat(x, closeTo(1.321333, 1.321334));
+		assertThat(x, closeTo(1.321333, 1.321334)); //closeTo的用法为取到区间数
 
 		// MovieScore m = new MovieScore();
 		// m.setMovieId(2675);
